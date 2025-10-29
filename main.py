@@ -2,29 +2,19 @@ import requests
 import json
 from typing import List, Dict, Any
 
-# URL base da API do GitHub
+
 GITHUB_API_URL = "https://api.github.com"
-# Endpoint para listar usuários
+
 USERS_ENDPOINT = f"{GITHUB_API_URL}/users"
 
 def get_github_users(since_id: int = 0, per_page: int = 30) -> List[Dict[str, Any]]:
-    """
-    Consome a API do GitHub para obter uma lista de usuários.
-    O endpoint /users não suporta ordenação nativa, mas é usado para obter os dados.
-    
-    Args:
-        since_id: O ID do usuário a partir do qual a lista deve começar (para paginação).
-        per_page: O número de usuários por página (máximo 100).
-        
-    Returns:
-        Uma lista de dicionários, onde cada dicionário representa um usuário.
-    """
+ 
     params = {
         "since": since_id,
         "per_page": per_page
     }
     
-    # Cabeçalhos recomendados pela documentação do GitHub
+
     headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28"
@@ -44,49 +34,22 @@ def get_github_users(since_id: int = 0, per_page: int = 30) -> List[Dict[str, An
         return []
 
 def extract_relevant_data(users_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Extrai um subconjunto de dados relevantes para a ordenação.
-    
-    Args:
-        users_data: Lista de dicionários de usuários da API.
-        
-    Returns:
-        Lista de dicionários com apenas os campos 'login' e 'id'.
-    """
+
     extracted_data = []
     for user in users_data:
-        # Os campos 'login' (string) e 'id' (inteiro) são ideais para demonstração de ordenação.
+        
         extracted_data.append({
             "login": user.get("login"),
             "id": user.get("id"),
-            "type": user.get("type") # Adiciona o tipo para possível ordenação ou filtro
+            "type": user.get("type") 
         })
     return extracted_data
 
 def sort_users(users: List[Dict[str, Any]], key: str, reverse: bool = False) -> List[Dict[str, Any]]:
-    """
-    Implementa um método de ordenação customizado para a lista de usuários.
-    
-    Args:
-        users: Lista de usuários a ser ordenada.
-        key: A chave do dicionário a ser usada para ordenação (ex: 'login', 'id').
-        reverse: Booleano para ordenação decrescente (True) ou crescente (False).
-        
-    Returns:
-        Lista de usuários ordenada.
-    """
+
     print(f"\n--- Ordenando por '{key}' (Reversa: {reverse}) ---")
     
-    # Usamos o método sort() do Python, que é uma implementação de Timsort,
-    # um algoritmo de ordenação híbrido eficiente (Merge Sort + Insertion Sort).
-    # O Timsort tem complexidade O(n log n).
-    
-    # A feature da API do GitHub que estamos usando para ordenação é o campo
-    # 'id' (numérico) e 'login' (alfabético).
-    
-    # A ordenação é feita localmente, pois o endpoint /users não oferece
-    # parâmetros de ordenação.
-    
+
     try:
         sorted_users = sorted(users, key=lambda user: user[key], reverse=reverse)
         return sorted_users
@@ -119,13 +82,7 @@ def main():
         print("\n--- Ordenação por Login (Alfabética Crescente) ---")
         for user in sorted_by_login:
             print(f"Login: {user['login']}, ID: {user['id']}")
-            
-        # Método 3: Ordenação por Tipo e depois por Login (Ordenação de Múltiplas Chaves)
-        # Primeiro, ordenamos pelo login, depois pelo tipo.
-        # Note: A ordenação é estável, então a segunda ordenação mantém a ordem da primeira.
-        # Para ordenar por múltiplas chaves, o Python permite passar uma tupla de chaves.
-        # Neste exemplo, faremos uma ordenação composta:
-        
+
         print("\n--- Ordenação Composta: Tipo (User/Organization) e depois por ID ---")
         
         # A ordenação por múltiplas chaves é feita passando uma tupla de valores para a chave `key`.
